@@ -19,17 +19,13 @@ import "./lib/SafeMath.sol";
 contract MyToken is IERC20, Mintable {
     using SafeMath for uint256;
 
-    string private _name ;
+   
 
-    string private _symbol;
+    string private _name = 'MyToken';
+
+    string private _symbol = 'MTK';
 
     uint8 private _decimals = 18;
-  
-
-
-    
-
-
 
     mapping (address => uint256) private _balances;
 
@@ -38,14 +34,6 @@ contract MyToken is IERC20, Mintable {
     uint256 private _totalSupply;
 
 
- constructor() public {
-        _name = "MyToken";
-        _symbol = "MTK";
-        _decimals = 18;
-        _totalSupply = 1000;
-         _balances[msg.sender] = _totalSupply;
-        emit Transfer(address(0), msg.sender, _totalSupply);
-    }
     /**
      * @dev Transfer token to a specified address.
      * @param to The address to transfer to.

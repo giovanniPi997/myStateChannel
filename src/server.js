@@ -11,8 +11,6 @@ const accountNr = 1;
 
 const costPerMessage = 100;
 
-// Must be equal to client and different for each test
-const sharedSeed = 'abcdefg123456789';
 let senderSign;
 let web3;
 let accounts;
@@ -28,7 +26,6 @@ let stop = false;
 let open=false;
 var message;
 const myBalance=0;
-
 var http = require('http');
 var io = require('socket.io');
 var port = 7546;
@@ -102,8 +99,17 @@ socket.on('connection', function(client){
         balance: message.balance,
         signature: message.signature
       }
+      balance=message.balance;
       
       checkSignature(message);
+     });
+
+     client.on('closingConfirmed',function(close){
+      console.log('Received message:'+close)
+      if(close=="STOP"){
+       
+      }
+      
      });
 
 });
@@ -125,7 +131,7 @@ const checkSignature =async message => {
       },
       {
         type: 'uint192',
-        value: message.balance
+        value: 1500
       },
       {
         type: 'address',
@@ -150,9 +156,12 @@ const checkSignature =async message => {
   console.log(accountRecovered);
     console.log("////////////////////////////");
     senderSign=message.signature;
-    balance=message.balance;
+    balance=1500;
+    console.log(senderSign);
     close(senderSign);
+    
   return accountRecovered === otherAccount;
+  
 };
 
 
@@ -169,7 +178,7 @@ const signBalance = async () => {
     },
     {
       type: 'uint192',
-      value: balance
+      value: 1500
     },
     {
       type: 'address',
@@ -177,37 +186,45 @@ const signBalance = async () => {
     }
   );
   console.log(receiverHash);
+  socket.emit("closing","STOP");
   return await web3.eth.sign(receiverHash, myAccount);
  
 };
 
 const close = async senderSign => {
   const receiverSign = await signBalance();
-
-  console.log('Closing channel...');
+  console.log("//////////////////////////////");
+  console.log("BLOCK NUMBER:"+blockNumber);
+  console.log('SENDER SIGN'+senderSign);
+  console.log('RECEIVER SIGN'+receiverSign);
+  console.log("BALANCE:"+balance);
+  console.log("//////////////////////////////");
   try {
    const FinalBalance = await MyToken.methods.balanceOf(myAccount).call({
       from: myAccount
     });
     console.log('Final Balance1: ' + FinalBalance);
-    await PaymentChannel.methods
+    const test1=await PaymentChannel.methods
       .closeChannel(
-        otherAccount,
+        myAccount,
         blockNumber,
-        balance,
+        1500,
         senderSign,
         receiverSign
-      )//.send(myAccountOptions);
-     
+      ).send(myAccountOptions);
       
-    console.log('Channel closed');
   } catch (e) {
     console.log(e);
   }
 };
 
 
-
+const test = async () => {
+  const FinalBalance = await MyToken.methods.balanceOf(myAccount).call({
+    from: myAccount
+  });
+  console.log('Balance: ' + FinalBalance);
+}
 
 
 
@@ -216,7 +233,13 @@ const main = async () => {
     await connection();
     await initWeb3AndContracts();
      listenPaymentChannelEvent();
+     
+     
+    await test();
     
   };
+
   
-  main();
+  
+   main();
+  

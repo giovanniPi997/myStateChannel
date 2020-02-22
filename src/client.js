@@ -63,9 +63,15 @@ const openPaymentChannel = async () => {
     from: myAccount
   });
   console.log('Deploy contract rewards: ' + myBalance);
-const deposit=200;
+const deposit=10000;
+const acc=await MyToken.methods.isOwner(myAccount).call();
+const xxx=await MyToken.methods.isMinter(myAccount).call();
+console.log(acc);
+console.log(xxx);
+
+
  await MyToken.methods.mint(myAccount, deposit).send(MyTokenOwnerAccountOptions);
- let value=10;
+ 
 // await MyToken.methods.transfer(otherAccount, value).send({from: myAccount});
  //await MyToken.methods.transferFrom(myAccount,otherAccount, value);
 
@@ -73,19 +79,20 @@ const deposit=200;
   from: myAccount
 });
 console.log('Final Balance2: ' + myBalance);
+
   await MyToken.methods
-    .approve(PaymentChannelAddr, deposit)
+    .approve(PaymentChannelAddr, 2000)
     .send(myAccountOptions);
 
   const receipt = await PaymentChannel.methods
-    .createChannel(otherAccount, deposit)
+    .createChannel(otherAccount, 2000)
     .send(myAccountOptions);
 
 
   blockNumber = receipt.blockNumber;
   console.log(
     'Opened Payment Channel with deposit: ' +
-      deposit +
+    2000 +
       ' and block number: ' +
       blockNumber
   );
@@ -95,7 +102,7 @@ console.log('Final Balance2: ' + myBalance);
   console.log('Final Balance2: ' + myBalance);
     
     var obj = {
-      deposit:deposit,
+      deposit:2000,
       blockNumber: blockNumber,
       senderAddr: myAccount}
 
@@ -110,14 +117,13 @@ console.log('Final Balance2: ' + myBalance);
 const senderHash="";
 const sendMessage = async () => {
   
-  balance += costPerHour;
   wantedHours--;
   const senderSign = await signBalance();
-
+  console.log("SENDER SIGN :"+senderSign);
   var message = {
   type: 'balance',
   message: '',
-  balance: balance,
+  balance: 1500,
   signature: senderSign
 }
 myBalance = await MyToken.methods.balanceOf(myAccount).call({
@@ -140,14 +146,14 @@ const signBalance = async () => {
     },
     {
       type: 'uint192',
-      value: balance
+      value: 1500
     },
     {
       type: 'address',
       value: PaymentChannelAddr
     }
   );
-  console.log(senderHash);
+  console.log("SENDER HASH :"+senderHash);
   console.log(web3.eth.sign(senderHash, myAccount));
   return await web3.eth.sign(senderHash, myAccount);
  
@@ -174,7 +180,12 @@ const signBalance = async () => {
     socket.on('password',function(password){
       console.log("MY PASSWORD:"+password);
     })
-
+ 
+    socket.on("closing",function(close){
+      if(close=="STOP"){
+        socket.emit("closingConfirmed","STOP")
+      }
+    })
     // Sends a client address to the server via sockets
     function sendAddressToServer(message) {
       socket.send(message);
@@ -189,7 +200,7 @@ const main = async () => {
   await initWeb3AndContracts();
   await openPaymentChannel();  
   await sendMessage();
-
+ 
 };
 
 main();

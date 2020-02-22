@@ -81,12 +81,12 @@ contract PaymentChannel is Ownable{
         );
 
         require(receiver == receiverAddr);
-
+ 
         // Both signatures have been verified and the channel can be closed.
         _closeChannel(senderAddr, receiverAddr, blockNumber, balance);
 
-        emit ChannelClosed(senderAddr, receiver, blockNumber, balance);
-        test=false;
+        emit ChannelClosed(receiver, receiver, blockNumber, balance);
+        
     }
 
     /** 

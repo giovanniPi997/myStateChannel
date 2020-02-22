@@ -1,47 +1,42 @@
 const MyToken = artifacts.require('MyToken');
-const SimplePaymentChannel=artifacts.require('SimplePaymentChannel');
 const PaymentChannel = artifacts.require('PaymentChannel');
 
 let blockNumber;
 
-
-
-
-
 contract('PaymentsChannel', async accounts => {
-    it("puts 10000 MyToken in the first account", async () => {
-        const MyToken = await MyToken.deployed();
-         balance = await MyToken.balanceOf.call(accounts[0]);
-        console.log(balance);
+    it("puts 10000 mytoken in the first account", async () => {
+        const mytoken = await MyToken.deployed();
+        let balance = await mytoken.balanceOf.call(accounts[0]);
+        console.log("A"+balance);
         assert.equal(balance.valueOf(), 0);
-        assert.equal(await MyToken.isOwner.call(accounts[0]), true);
-        assert.equal(await MyToken.isMinter.call(accounts[0]), true);
+        assert.equal(await mytoken.isOwner.call(accounts[0]), true);
+        assert.equal(await mytoken.isMinter.call(accounts[0]), true);
 
-        await MyToken.mint(accounts[0], 10000);
-        balance = await MyToken.balanceOf.call(accounts[0]);
-        console.log(balance);
-      //  assert.equal(balance.valueOf(), 10000, "Amount was not correctly minted");
+        await mytoken.mint(accounts[0], 10000);
+        balance = await mytoken.balanceOf.call(accounts[0]);
+        console.log("A"+balance);
+        assert.equal(balance.valueOf(), 10000, "Amount was not correctly minted");
     });
 
     it("opens a channel from first account to second", async () => {
-        const MyToken = await MyToken.deployed();
+        const mytoken = await MyToken.deployed();
         const channel = await PaymentChannel.deployed();
 
-        await MyToken.approve(PaymentChannel.address, 5000);
-        const result = await channel.createChannel(accounts[1], 5000);
-        const b1= await MyToken.balanceOf.call(accounts[0]);
-        console.log("BALANCE MINE:"+b1);
-        console.log("//////////////////////");
+        await mytoken.approve(PaymentChannel.address, 2000);
+        const result = await channel.createChannel(accounts[1], 2000);
         
-        const b2= await MyToken.balanceOf.call(accounts[1]);
-        console.log("BALANCE OTHER:"+b2);
         blockNumber = result.receipt.blockNumber;
     });
 
     it("closes a channel", async () => {
+        const mytoken = await MyToken.deployed();
         const channel = await PaymentChannel.deployed();
-        const balance = 1300;
+        const balance = 1500;
+        const balance4 = await mytoken.balanceOf.call(accounts[0]);
+        console.log("A"+balance4);
 
+        const balance5 = await mytoken.balanceOf.call(accounts[1]);
+        console.log("A"+balance5);
         const receiverHash = web3.utils.soliditySha3({
             type: 'address',
             value: accounts[0]
@@ -74,6 +69,13 @@ contract('PaymentsChannel', async accounts => {
             value: PaymentChannel.address
         });
         const senderSign = await web3.eth.sign(senderHash, accounts[0]);
+ console.log(receiverSign);
+ console.log(senderSign);
+       
+ 
+
+
+
         //console.log('\n Sender: ' + accounts[0]);
         //console.log(senderHash);
         //console.log(senderSign);
@@ -82,14 +84,12 @@ contract('PaymentsChannel', async accounts => {
         await channel.closeChannel(accounts[1], blockNumber, balance, senderSign, receiverSign, {
             from: accounts[1]
         });
-         const b1= await MyToken.balanceOf.call(accounts[0]);
-        console.log("BALANCE MINE:"+b1);
-        console.log("//////////////////////");
-        
-        const b2= await MyToken.balanceOf.call(accounts[1]);
-        console.log("BALANCE OTHER:"+b2);
         //await channel._closeChannel(accounts[0],accounts[1],blockNumber,balance)
-        
+        const balance1 = await mytoken.balanceOf.call(accounts[0]);
+        console.log("A"+balance1);
+
+        const balance2 = await mytoken.balanceOf.call(accounts[1]);
+        console.log("A"+balance2);
         
     });
 });
